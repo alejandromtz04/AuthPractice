@@ -6,16 +6,21 @@ import { RolModule } from './rol/rol.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 import * as dotenv from 'dotenv';
+import { User } from './user/entities/user.entity';
+import { Rol } from './rol/entities/rol.entity';
 
 @Module({
   imports: [
     ConfigModule.forRoot(),
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: process.env.DB_HOST,
+      host: 'localhost',
       port: 5432,
       username: 'postgres',
-      password: '159753258'
+      password: '159753258',
+      database: 'ChatApi',
+      entities: [User, Rol],
+      synchronize: true // delete in production
     }),
     UserModule, RolModule],
   controllers: [AppController],
