@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, HttpStatus, Injectable } from '@nestjs/common';
+import { BadRequestException, ConflictException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { Repository } from 'typeorm';
@@ -17,13 +17,20 @@ export class UserService {
   async create(createUserDto: CreateUserDto) {
     try { 
 
-      if (createUserDto == null || createUserDto == undefined) {
-        throw new BadRequestException('Enter the correct data!');
+      const emptyFields = [];
+      Object.entries(createUserDto).forEach(([key, value]) => {
+        if (value === undefined || value === null || value === ''){
+          emptyFields.push(key)
+        }
+      })
+
+      if (emptyFields.length > 0) {
+        return new BadRequestException(`The following fields are empty or undefined: ${emptyFields.join(', ')}`);
       }
 
       const findUser = await this.userRepository.findOne({ where: { userName: createUserDto.userName }});
       if (findUser) {
-        throw new ConflictException('This username already exist.')
+        return new HttpException('This username already exist.', HttpStatus.CONFLICT);
       }
 
       const user = new User();
@@ -42,7 +49,7 @@ export class UserService {
         message: 'Was created',
         status: HttpStatus.CREATED,
         object: user
-      }
+      } 
       
     } catch (e) {
       console.log(e)
