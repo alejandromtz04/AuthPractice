@@ -5,8 +5,6 @@ import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { CustomHttpException } from 'src/global/custom-exception';
 import { InjectRepository } from '@nestjs/typeorm';
-import { error } from 'console';
-
 @Injectable()
 export class UserService {
 
@@ -14,7 +12,7 @@ export class UserService {
     @InjectRepository(User) private readonly userRepository: Repository<User>
   ) {}
 
-  async create(createUserDto: CreateUserDto) {
+  async createUser(createUserDto: CreateUserDto) {
     try { 
 
       const emptyFields = [];
@@ -43,7 +41,6 @@ export class UserService {
       user.isActivated = createUserDto.isActivated;
 
       await this.userRepository.save(user);
-      console.log(user)
       return {
         ok: true,
         message: 'Was created',
@@ -52,7 +49,6 @@ export class UserService {
       } 
       
     } catch (e) {
-      console.log(e)
       throw new CustomHttpException(
         'Internal server error on method: Create of userService.ts', 
         HttpStatus.INTERNAL_SERVER_ERROR
@@ -60,12 +56,62 @@ export class UserService {
     }
   }
 
-  findAll() {
-   return 'hola'
+  async findAllUser() {
+   try {
+    const users = await this.userRepository.find({ where: { isActivated: true }});
+
+    if (!users || users.length == 0) { 
+      return {
+        ok: false,
+        message: "Users not found",
+        status: HttpStatus.NOT_FOUND
+      }
+    }
+
+    if (users) {
+      return {
+        ok: true,
+        message: "Was found",
+        status: HttpStatus.FOUND,
+        object: users
+      }
+    }
+
+   } catch(e) {
+    throw new CustomHttpException(
+      "Internal server error in method",
+      HttpStatus.INTERNAL_SERVER_ERROR
+    );
+   }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async findById(id: number) {
+   try { 
+    const findUser = await this.userRepository.findOne({ where: { id: id, isActivated: true }});
+
+    if (!findUser || findUser == null || findUser == undefined) {
+      return {
+        ok: false,
+        message: "User not found",
+        status: HttpStatus.NOT_FOUND
+      }
+    }
+
+    if (findUser) {
+      return {
+        ok: true,
+        message: "User found",
+        status: HttpStatus.FOUND,
+        object: findUser
+      }
+    }
+
+   } catch (e) {
+    throw new CustomHttpException(
+      "Internal server error on method: findByid of userService.ts",
+      HttpStatus.INTERNAL_SERVER_ERROR
+    );
+   } 
   }
 
   update(id: number, updateUserDto: UpdateUserDto) {
