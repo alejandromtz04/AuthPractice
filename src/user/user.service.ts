@@ -5,6 +5,7 @@ import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { CustomHttpException } from 'src/global/custom-exception';
 import { InjectRepository } from '@nestjs/typeorm';
+import * as bcrypt from 'bcryptjs';
 @Injectable()
 export class UserService {
 
@@ -114,8 +115,16 @@ export class UserService {
    } 
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async updateUser(id: number, updateUserDto: UpdateUserDto) {
+    try {
+
+      const findUser = await this.userRepository.findOne({ where: { id, isActivated: true }})
+    } catch (e) {
+      throw new CustomHttpException(
+        "Internal server error on method: updateUser in service method \nLines 118-",
+      HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
   }
 
   remove(id: number) {
