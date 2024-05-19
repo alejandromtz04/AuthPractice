@@ -17,7 +17,8 @@ export class UserService {
   async createUser(createUserDto: CreateUserDto) {
     try { 
 
-      const emptyFields = [];
+      //DEFINES EMPTY FIELDS TO KNOW IN JSON
+      const emptyFields = []; 
       Object.entries(createUserDto).forEach(([key, value]) => {
         if (value === undefined || value === null || value === ''){
           emptyFields.push(key)
@@ -39,6 +40,7 @@ export class UserService {
       user.lastName = createUserDto.lastName;
       user.age = createUserDto.age;
       user.userName = createUserDto.userName;
+      user.email = createUserDto.email;
       user.password = createUserDto.password;
       user.isActivated = createUserDto.isActivated;
 
@@ -89,6 +91,15 @@ export class UserService {
 
   async findById(id: number) {
    try { 
+
+    if (!id) {
+      return {
+        ok: false,
+        messaje: "Enter the id",
+        status: HttpStatus.BAD_REQUEST
+      }
+    }
+
     const findUser = await this.userRepository.findOne({ where: { id: id, isActivated: true }});
 
     if (!findUser || findUser == null || findUser == undefined) {
@@ -114,6 +125,41 @@ export class UserService {
       HttpStatus.INTERNAL_SERVER_ERROR
     );
    } 
+  }
+
+  async findByEmail(id: number) {
+    try {
+      if (!id) {
+        return {
+          ok: false,
+          message: "Enter the id.",
+          status: HttpStatus.BAD_REQUEST
+        }
+      }
+
+      const findEmail = await this.userRepository.findOne({ where: { id, isActivated: true }});
+
+      if (!findEmail || findEmail === null || findEmail === undefined) {
+        return {
+          ok: false,
+          message: "Email not found",
+          status: HttpStatus.NOT_FOUND,
+        }
+      } else {
+        return {
+          ok: true,
+          message: "Email was found",
+          status: HttpStatus.FOUND,
+          object: findEmail.email
+        }
+      }
+
+    } catch (e) {
+      throw new CustomHttpException(
+        "Internal server error on method: findByEmail in userService.ts",
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
   }
 
   async updateUser(id: number, updateUserDto: UpdateUserDto) {
@@ -156,7 +202,7 @@ export class UserService {
       
     } catch (e) {
       throw new CustomHttpException(
-        "Internal server error on method: updateUser in service method \nLines 118 - 162",
+        "Internal server error on method: updateUser in user.service.ts",
         HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
@@ -190,4 +236,8 @@ export class UserService {
       );
     }
   }
+
+  /**
+   * Needs add pagination
+   */
 }
