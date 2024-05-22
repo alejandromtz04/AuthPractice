@@ -127,9 +127,9 @@ export class UserService {
    } 
   }
 
-  async findByEmail(id: number) {
+  async findByEmail(email: string) {
     try {
-      if (!id) {
+      if (!email) {
         return {
           ok: false,
           message: "Enter the id.",
@@ -137,7 +137,7 @@ export class UserService {
         }
       }
 
-      const findEmail = await this.userRepository.findOne({ where: { id, isActivated: true }});
+      const findEmail = await this.userRepository.findOne({ where: { email, isActivated: true }});
 
       if (!findEmail || findEmail === null || findEmail === undefined) {
         return {
