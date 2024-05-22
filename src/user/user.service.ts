@@ -11,7 +11,7 @@ import { find } from 'rxjs';
 export class UserService {
 
   constructor(
-    @InjectRepository(User) private readonly userRepository: Repository<User>
+    @InjectRepository(User) private readonly userRepository: Repository<User>,
   ) {}
 
   async createUser(createUserDto: CreateUserDto) {
@@ -31,17 +31,23 @@ export class UserService {
 
       const findUser = await this.userRepository.findOne({ where: { userName: createUserDto.userName }});
       if (findUser) {
-        return new HttpException('This username already exist.', HttpStatus.CONFLICT);
+        return new HttpException('This username already exist.', HttpStatus.BAD_REQUEST);
+      }
+
+      const findEmail = await this.userRepository.findOne({ where: { email: createUserDto.email }});
+      if (findEmail) {
+        return new CustomHttpException('This Email already exist.', HttpStatus.BAD_REQUEST)
       }
 
       const user = new User();
+      const saltRounds = 12;
 
       user.name = createUserDto.name;
       user.lastName = createUserDto.lastName;
       user.age = createUserDto.age;
       user.userName = createUserDto.userName;
       user.email = createUserDto.email;
-      user.password = createUserDto.password;
+      user.password = await bcrypt.hash(createUserDto.password, saltRounds);
       user.isActivated = createUserDto.isActivated;
 
       await this.userRepository.save(user);
