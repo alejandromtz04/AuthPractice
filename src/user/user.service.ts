@@ -1,12 +1,13 @@
 import { BadRequestException, ConflictException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { Repository } from 'typeorm';
+import { Like, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { CustomHttpException } from 'src/global/custom-exception';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcryptjs';
 import { find } from 'rxjs';
+import { SearchUserDto } from './dto/search-user.dto';
 @Injectable()
 export class UserService {
 
@@ -25,6 +26,9 @@ export class UserService {
         }
       })
 
+      const saltRounds = 12;
+      const hashedPassword = await bcrypt.hash(createUserDto.password, saltRounds);
+
       if (emptyFields.length > 0) {
         return new BadRequestException(`The following fields are empty or undefined: ${emptyFields.join(', ')}`);
       }
@@ -40,14 +44,14 @@ export class UserService {
       }
 
       const user = new User();
-      const saltRounds = 12;
+      
 
       user.name = createUserDto.name;
       user.lastName = createUserDto.lastName;
       user.age = createUserDto.age;
       user.userName = createUserDto.userName;
       user.email = createUserDto.email;
-      user.password = await bcrypt.hash(createUserDto.password, saltRounds);
+      user.password = hashedPassword;
       user.isActivated = createUserDto.isActivated;
 
       await this.userRepository.save(user);
@@ -59,6 +63,7 @@ export class UserService {
       } 
       
     } catch (e) {
+      console.log(e);
       throw new CustomHttpException(
         'Internal server error on method: Create of userService.ts', 
         HttpStatus.INTERNAL_SERVER_ERROR
@@ -243,7 +248,54 @@ export class UserService {
     }
   }
 
-  /**
-   * Needs add pagination
-   */
+  async listPaginated({ page, limit, name, lastName, email, userName }: SearchUserDto) {
+    try { 
+      const [users, totalItems] = await this.userRepository.findAndCount({
+        relations: { /* relations here */ },
+        where: {
+          isActivated: true,
+          name: Like(`%${name}%`),
+          lastName: Like(`%${lastName}%`),
+          email: Like(`%${email}%`),
+          userName: Like(`%${userName}%`)
+        },
+        skip: (page - 1) * limit,
+        take: limit
+      });
+
+      if (users.length > 0) {
+        let totalPag: number = totalItems / limit;
+
+        if (totalPag % 1 !== 0) {
+          totalPag = Math.trunc(totalPag) + 1;
+        }
+
+        let nextPag: number = page >= totalPag ? page : Number(page) + 1;
+        let prevPag: number = page <= 1 ? page : page - 1;
+
+        console.log(page);
+        return {
+          ok: true,
+          message: 'Users found',
+          users,
+          totalPag,
+          currentPag: Number(page),
+          nextPag: Number(nextPag),
+          prevPag: Number(prevPag),
+          take: Number(limit)
+        };
+      } else {
+        return {
+          ok: false,
+          message: 'Users not found or doesnt exist',
+          status: HttpStatus.NOT_FOUND
+        }
+      }
+    } catch (e) {
+      return new CustomHttpException(
+        `Error in userService method: listPaginated. \n ${e.message}`, 
+        HttpStatus.INTERNAL_SERVER_ERROR
+      )
+    }
+  }
 }

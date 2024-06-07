@@ -14,15 +14,17 @@ import { Rol } from './rol/entities/rol.entity';
     ConfigModule.forRoot(),
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: 'localhost',
-      port: 5432,
-      username: 'postgres',
-      password: '159753258',
-      database: 'ChatApi',
+      host: process.env.DB_HOST,
+      port: +process.env.DB_PORT,
+      username: process.env.DB_USERNAME,
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_DATABASE,
       entities: [User, Rol],
       synchronize: true // delete in production
     }),
-    UserModule, RolModule],
+    UserModule, 
+    RolModule
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
