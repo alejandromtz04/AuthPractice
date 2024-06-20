@@ -8,6 +8,7 @@ import { ConfigModule } from '@nestjs/config';
 import * as dotenv from 'dotenv';
 import { User } from './user/entities/user.entity';
 import { Rol } from './rol/entities/rol.entity';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -23,7 +24,7 @@ import { Rol } from './rol/entities/rol.entity';
       synchronize: true // delete in production
     }),
     UserModule, 
-    RolModule
+    RolModule, AuthModule
   ],
   controllers: [AppController],
   providers: [AppService],

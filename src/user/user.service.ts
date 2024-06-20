@@ -1,7 +1,7 @@
 import { BadRequestException, ConflictException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { Like, Repository } from 'typeorm';
+import { ILike, Like, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { CustomHttpException } from 'src/global/custom-exception';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -254,10 +254,10 @@ export class UserService {
         relations: { /* relations here */ },
         where: {
           isActivated: true,
-          name: Like(`%${name}%`),
-          lastName: Like(`%${lastName}%`),
-          email: Like(`%${email}%`),
-          userName: Like(`%${userName}%`)
+          name: ILike(`%${name}%`),
+          lastName: ILike(`%${lastName}%`),
+          email: ILike(`%${email}%`),
+          userName: ILike(`%${userName}%`)
         },
         skip: (page - 1) * limit,
         take: limit

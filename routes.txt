@@ -1,0 +1,1 @@
+http://localhost:3000/chatApi/user/list?page=1&limit=5&name=&lastName=&email=&userName=
