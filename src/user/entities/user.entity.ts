@@ -1,5 +1,5 @@
 import { Entity, Column, PrimaryGeneratedColumn} from "typeorm";
-
+import * as bcrypt from 'bcryptjs'
 @Entity()
 export class User {
 
@@ -26,4 +26,13 @@ export class User {
 
     @Column({ default : true })
     isActivated: boolean;
+
+    hashPassword(): void {
+        const saltRounds = bcrypt.saltSync(10)
+        this.password = bcrypt.hashSync(this.password, saltRounds)
+    }
+
+    checkPassword(password: string): boolean {
+        return bcrypt.compareSync(password, this.password)
+    }
 }

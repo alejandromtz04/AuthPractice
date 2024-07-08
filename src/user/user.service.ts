@@ -148,7 +148,14 @@ export class UserService {
         }
       }
 
-      const findEmail = await this.userRepository.findOne({ where: { email, isActivated: true }});
+      const findEmail = await this.userRepository.findOne({ 
+        where: { 
+          email,
+          isActivated: true
+        }, relations: {
+          //realtions here
+        }
+      });
 
       if (!findEmail || findEmail === null || findEmail === undefined) {
         return {

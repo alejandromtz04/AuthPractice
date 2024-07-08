@@ -7,82 +7,68 @@ import { Repository } from 'typeorm';
 import { User } from 'src/user/entities/user.entity';
 import { CustomHttpException } from 'src/global/custom-exception';
 import { UserService } from 'src/user/user.service';
+import { JwtService } from "@nestjs/jwt";
 
 @Injectable()
 export class AuthService {
   
   constructor(
     @InjectRepository(User) private readonly userRepository: Repository<User>,
-    private readonly userService: UserService
+    private userService: UserService,
+    private JwtService: JwtService
   ) {}
-
-  async createUser(createUserDto: CreateUserDto) {
-    try { 
-
-      //DEFINES EMPTY FIELDS TO KNOW IN JSON
-      const emptyFields = []; 
-      Object.entries(createUserDto).forEach(([key, value]) => {
-        if (value === undefined || value === null || value === ''){
-          emptyFields.push(key)
-        }
-      })
-
-      const saltRounds = 12;
-      const hashedPassword = await bcrypt.hash(createUserDto.password, saltRounds);
-
-      if (emptyFields.length > 0) {
-        return new BadRequestException(`The following fields are empty or undefined: ${emptyFields.join(', ')}`);
-      }
-
-      const findUser = await this.userRepository.findOne({ where: { userName: createUserDto.userName }});
-      if (findUser) {
-        return new HttpException('This username already exist.', HttpStatus.BAD_REQUEST);
-      }
-
-      const findEmail = await this.userRepository.findOne({ where: { email: createUserDto.email }});
-      if (findEmail) {
-        return new CustomHttpException('This Email already exist.', HttpStatus.BAD_REQUEST)
-      }
-
-      const user = new User();
-      
-
-      user.name = createUserDto.name;
-      user.lastName = createUserDto.lastName;
-      user.age = createUserDto.age;
-      user.userName = createUserDto.userName;
-      user.email = createUserDto.email;
-      user.password = hashedPassword;
-      user.isActivated = createUserDto.isActivated;
-
-      await this.userRepository.save(user);
-      return {
-        ok: true,
-        message: 'Was created',
-        status: HttpStatus.CREATED,
-        object: user
-      } 
-      
-    } catch (e) {
-      console.log(e);
-      throw new CustomHttpException(
-        'Internal server error on method: Create of userService.ts', 
-        HttpStatus.INTERNAL_SERVER_ERROR
-      );
-    }
-  }
 
   async login({email, password}: UserLoginDto) {
 
-    const user = await this.userService.findByEmail(email);
+    try {
+      const user = await this.userRepository.findOne({
+        relations: {
 
-    if (!user || user == undefined || user == null) {
+        }, where: {
+          email
+        }
+      })
+
+      
+
+      if(!user) {
+        return new CustomHttpException(
+          'email not found', 
+          HttpStatus.NOT_FOUND
+        );
+      }
+      
+      if (!user.checkPassword(password)) {
+        return new CustomHttpException(
+          'Incorrect Password',
+          HttpStatus.UNAUTHORIZED
+        )
+      }
+
+      if (user.isActivated == false) {
+        return new CustomHttpException(
+          'User not found',
+          HttpStatus.NOT_FOUND
+        )
+      }
+
+      //user.password = undefined;
+      //const payload = { sub: user.id, email: user.email }
+      //const token = this.JwtService.sign(payload);
+
+      return {
+        ok: true,
+        user,
+        text: `Hola ${user.name}`
+        //token,
+      }
+
+    } catch (e) {
+      console.error(e);
       return new CustomHttpException(
-        'Invalid credentials',
-        HttpStatus.BAD_REQUEST
+        'Internal server error on method: Login',
+        HttpStatus.INTERNAL_SERVER_ERROR
       )
     }
-
-    const validPassword = await bcrypt.
   }
 }
