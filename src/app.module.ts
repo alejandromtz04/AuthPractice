@@ -10,9 +10,12 @@ import { User } from './user/entities/user.entity';
 import { Rol } from './rol/entities/rol.entity';
 import { AuthModule } from './auth/auth.module';
 
+dotenv.config();
 @Module({
   imports: [
-    ConfigModule.forRoot(),
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: process.env.DB_HOST,

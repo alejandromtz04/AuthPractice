@@ -6,7 +6,6 @@ import { User } from './entities/user.entity';
 import { CustomHttpException } from 'src/global/custom-exception';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcryptjs';
-import { find } from 'rxjs';
 import { SearchUserDto } from './dto/search-user.dto';
 @Injectable()
 export class UserService {
