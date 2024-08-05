@@ -9,8 +9,10 @@ import * as dotenv from 'dotenv';
 import { User } from './user/entities/user.entity';
 import { Rol } from './rol/entities/rol.entity';
 import { AuthModule } from './auth/auth.module';
+import { ChatModule } from './chat/chat.module';
 
 dotenv.config();
+console.log('jwt_secret', process.env.JWT_SECRET)
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -27,7 +29,9 @@ dotenv.config();
       synchronize: true // delete in production
     }),
     UserModule, 
-    RolModule, AuthModule
+    RolModule, 
+    AuthModule, 
+    ChatModule
   ],
   controllers: [AppController],
   providers: [AppService],

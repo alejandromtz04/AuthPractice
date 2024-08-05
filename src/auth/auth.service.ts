@@ -42,10 +42,6 @@ export class AuthService {
         return new CustomHttpException('User not found', HttpStatus.NOT_FOUND);
       }
 
-      //user.password = undefined;
-      //const payload = { sub: user.id, email: user.email }
-      //const token = this.JwtService.sign(payload);
-
       user.password = undefined;
       const payload = {  email: user.email, sub: user.id };
       const token = await this.jwtService.signAsync(payload, { secret: jwtConstant.secret });
@@ -53,7 +49,8 @@ export class AuthService {
       return {
         access_token: token,
         ok: true,
-        text: `Hola ${user.name}`
+        text: `Hola ${user.name}`,
+        user: user
       }
 
     } catch (e) {

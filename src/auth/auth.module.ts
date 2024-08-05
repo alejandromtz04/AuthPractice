@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Inject, Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -7,6 +7,7 @@ import { UserService } from 'src/user/user.service';
 import { UserController } from 'src/user/user.controller';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { jwtConstant } from './constants/constants';
+import { ConfigModule } from '@nestjs/config';
 
 
 @Module({
@@ -16,8 +17,10 @@ import { jwtConstant } from './constants/constants';
       global: true,
       secret: jwtConstant.secret,
       signOptions: { expiresIn: '1d' }
-    })
+    }),
+
   ],
+  
   controllers: [AuthController, UserController],
   providers: [AuthService, UserService, JwtService],
 })
