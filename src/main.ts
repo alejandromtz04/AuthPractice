@@ -7,7 +7,8 @@ async function bootstrap() {
   await app.setGlobalPrefix('chatApi');
   await app.listen(3000);
 
-  await app.enableCors({
+  
+  app.enableCors({
     origin: 'http://AlmasZWebUWUSV.com', // this is an example
     methods: 'GET, POST, PUT, PATCH, DELETE', // allowed methods
     allowedHeaders: 'Content-Type, Accept', // allowed headers
