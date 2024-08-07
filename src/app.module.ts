@@ -12,7 +12,6 @@ import { AuthModule } from './auth/auth.module';
 import { ChatModule } from './chat/chat.module';
 
 dotenv.config();
-console.log('jwt_secret', process.env.JWT_SECRET)
 @Module({
   imports: [
     ConfigModule.forRoot({
